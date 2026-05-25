@@ -27,18 +27,18 @@ class MainTimer(ActionBase):
         pass
     
     def on_key_up(self) -> None:
-        if not os.path.exists(os.path.expanduser("~/dhv_timer_click1")):
-            if not os.path.exists(os.path.expanduser("~/dhv_long_press_active")):
-                open(os.path.expanduser("~/dhv_timer_click1"), 'a').close()
+        if not os.path.exists(os.path.expanduser("~/.config/ChillClock/.toggle_primary")):
+            if not os.path.exists(os.path.expanduser("~/.config/ChillClock/.long_press_active")):
+                open(os.path.expanduser("~/.config/ChillClock/.toggle_primary"), 'a').close()
             else:
-                os.remove(os.path.expanduser("~/dhv_long_press_active"))
+                os.remove(os.path.expanduser("~/.config/ChillClock/.long_press_active"))
         self.update_button()
 
     def on_tick(self) -> None:
         self.update_button()
     
     def update_button(self):
-        with open(os.path.expanduser("~/dhv_timer.txt"), 'r') as f:
+        with open(os.path.expanduser("~/.config/ChillClock/current_timer.json"), 'r') as f:
             data = json.load(f)
         self.set_center_label(f"{data['text']}")
         current_color = data['class']

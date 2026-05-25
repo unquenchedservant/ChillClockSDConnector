@@ -24,13 +24,13 @@ class BackupTimer(ActionBase):
         self.update_button()
         
     def on_key_down(self) -> None:
-        if not os.path.exists(os.path.expanduser("~/dhv_timer_click2")):
-            open(os.path.expanduser("~/dhv_timer_click2"), 'a').close()
-            open(os.path.expanduser("~/dhv_long_press_active"), 'a').close()
+        if not os.path.exists(os.path.expanduser("~/.config/ChillClock/.toggle_secondary")):
+            open(os.path.expanduser("~/.config/ChillClock/.toggle_secondary"), 'a').close()
+            open(os.path.expanduser("~/.config/ChillClock/.long_press_active"), 'a').close()
         self.update_button()
 
     def update_button(self):
-        with open(os.path.expanduser("~/dhv_timer.txt"), 'r') as f:
+        with open(os.path.expanduser("~/.config/ChillClock/current_timer.json"), 'r') as f:
             data = json.load(f)
         self.set_center_label(f"{data['text']}")
         current_color = data['class']

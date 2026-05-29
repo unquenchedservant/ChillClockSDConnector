@@ -17,8 +17,22 @@ def _load_server():
     except Exception:
         return "http://localhost:2420"
 
+def _load_api_key():
+    env_path = os.path.expanduser("~/.config/ChillClock/.env")
+    try:
+        with open(env_path) as f:
+            for line in f:
+                if line.startswith("CHILLCLOCK_API_KEY="):
+                    return line.strip().split("=", 1)[1]
+    except Exception:
+        pass
+    return ""
 
-# Import gtk modules - used for the config rows
+SERVER = _load_server()
+_API_KEY = _load_api_key()
+AUTH_HEADERS = {"X-API-KEY": _API_KEY} if _API_KEY else {}
+
+# Import gtk modules - used for the config rowss
 import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -26,8 +40,6 @@ from gi.repository import Gtk, Adw
 
 class BackupTimer(ActionBase):
     long_press_active = False
-
-    SERVER = _load_server()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,7 +51,7 @@ class BackupTimer(ActionBase):
         
     def on_key_down(self) -> None:
         BackupTimer.long_press_active = True
-        requests.post(f"{SERVER}/toggle?timer=2").json()
+        requests.post(f"{SERVER}/toggle?timer=2", headers=AUTH_HEADERS).json()
         self.update_button()
 
     def on_tick(self) -> None:
@@ -47,7 +59,7 @@ class BackupTimer(ActionBase):
     
     def update_button(self):
         try:
-            data = requests.get(f"{SERVER}/status", timeout=1).json()
+            data = requests.get(f"{SERVER}/status", timeout=1, headers=AUTH_HEADERS).json()
         except Exception:
             return
         self.set_center_label(data["text"])

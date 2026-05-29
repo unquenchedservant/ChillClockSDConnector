@@ -57,21 +57,19 @@ class MainTimer(ActionBase):
         print(AUTH_HEADERS)
         if not BackupTimer.long_press_active:
             requests.post(f"{SERVER}/toggle?timer=1", headers=AUTH_HEADERS)
-            self._apply_state(data)
         else:
             BackupTimer.long_press_active = False 
+        self.update_button()
 
     def on_tick(self) -> None:
         self.update_button()
     
     def update_button(self):
         try:
-            self._apply_state(requests.get(f"{SERVER}/status", timeout=1, headers=AUTH_HEADERS).json())
+            data = requests.get(f"{SERVER}/status", timeout=1, headers=AUTH_HEADERS).json()
         except Exception:
             return
-        
-    
-    def _apply_state(self, data):
+
         self.set_center_label(data["text"])
         color = data["class"]
         if color == "red":
@@ -81,4 +79,4 @@ class MainTimer(ActionBase):
         elif color == "yellow":
             self.set_background_color([255,255,0,255], True)
         elif color == "white":
-            self.set_background_color([0,0,0,0], True)
+            self.set_background_color([0,0,0,255], True)

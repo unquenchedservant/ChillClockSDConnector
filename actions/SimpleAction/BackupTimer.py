@@ -54,15 +54,14 @@ class BackupTimer(ActionBase):
         requests.post(f"{SERVER}/toggle?timer=2", headers=AUTH_HEADERS).json()
         self.update_button()
 
-    def on_tick(self) -> None:
-        self.update_button()
+    # def on_tick(self) -> None:
+    #     self.update_button()
     
     def update_button(self):
         try:
             data = requests.get(f"{SERVER}/status", timeout=1, headers=AUTH_HEADERS).json()
         except Exception:
             return
-        self.set_center_label(data["text"])
         color = data["class"]
         if color == "red":
             self.set_background_color([255, 0, 0, 255], True)
@@ -71,5 +70,6 @@ class BackupTimer(ActionBase):
         elif color == "yellow":
             self.set_background_color([255,255,0,255], True)
         elif color == "white":
-            self.set_background_color([0,0,0,255], True)
+            self.set_background_color([0,0,0,0], True)
+        self.set_center_label(data["text"]) # for some reason if this goes before the color if-else block, it breaks the StreamDeck's ability to update the background color
         

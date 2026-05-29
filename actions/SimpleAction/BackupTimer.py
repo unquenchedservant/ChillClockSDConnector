@@ -7,6 +7,16 @@ from src.backend.PluginManager.PluginBase import PluginBase
 # Import python modules
 import os
 import json
+import requests
+
+def _load_server():
+    config_path = os.path.expanduser("~/.config/ChillClock/config.json")
+    try:
+        with open(config_path) as f:
+            return json.load(f)["server_url"]
+    except Exception:
+        return "http://localhost:2420"
+
 
 # Import gtk modules - used for the config rows
 import gi
@@ -15,6 +25,10 @@ gi.require_version("Adw", "1")
 from gi.repository import Gtk, Adw
 
 class BackupTimer(ActionBase):
+    long_press_active = False
+
+    SERVER = _load_server()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
@@ -24,21 +38,26 @@ class BackupTimer(ActionBase):
         self.update_button()
         
     def on_key_down(self) -> None:
-        if not os.path.exists(os.path.expanduser("~/.config/ChillClock/.toggle_secondary")):
-            open(os.path.expanduser("~/.config/ChillClock/.toggle_secondary"), 'a').close()
-            open(os.path.expanduser("~/.config/ChillClock/.long_press_active"), 'a').close()
+        BackupTimer.long_press_active = True
+        requests.post(f"{SERVER}/toggle?timer=2").json()
         self.update_button()
 
+    def on_tick(self) -> None:
+        self.update_button()
+    
     def update_button(self):
-        with open(os.path.expanduser("~/.config/ChillClock/current_timer.json"), 'r') as f:
-            data = json.load(f)
-        self.set_center_label(f"{data['text']}")
-        current_color = data['class']
-        if current_color == "red":
+        try:
+            data = requests.get(f"{SERVER}/status", timeout=1).json()
+        except Exception:
+            return
+        self.set_center_label(data["text"])
+        color = data["class"]
+        if color == "red":
             self.set_background_color([255, 0, 0, 255], True)
-        elif current_color == "green":
-            self.set_background_color([0, 128, 0, 255], True)
-        elif current_color == "yellow":
-            self.set_background_color([255, 255, 0, 255], True)
-        else:
-            self.set_background_color([0, 0, 0, 0], True)
+        elif color == "green":
+            self.set_background_color([0,128,0,255], True)
+        elif color == "yellow":
+            self.set_background_color([255,255,0,255], True)
+        elif color == "white":
+            self.set_background_color([255,255,255,255], True)
+        
